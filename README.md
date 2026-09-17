@@ -39,6 +39,7 @@ npm run dev
 - Finanças: http://localhost:3000/loja/financas
 - Fitness: http://localhost:3000/loja/fitness
 - Catálogo da Semeia (compatível): http://localhost:3000/produtos
+- Oferta (exemplo): http://localhost:3000/loja/semeia/oferta/ainda-assim-espero
 - Admin / empresa: http://localhost:3000/admin/company
 - Admin / lojas: http://localhost:3000/admin/stores
 

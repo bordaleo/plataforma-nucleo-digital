@@ -38,6 +38,9 @@ export default async function AdminProductsPage() {
                     {product.name}
                   </Link>
                   <p className="text-xs text-muted">{product.slug}</p>
+                  <Link href={`/admin/produtos/${product.id}/oferta`} className="mt-1 inline-block text-xs text-bronze hover:text-bronze-deep">
+                    Oferta
+                  </Link>
                 </td>
                 <td className="px-4 py-4 text-ink-soft">{product.category.name}</td>
                 <td className="px-4 py-4">{formatPrice(product.promotionalPriceCents ?? product.priceCents)}</td>

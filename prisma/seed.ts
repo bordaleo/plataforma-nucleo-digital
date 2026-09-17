@@ -2,7 +2,9 @@ import { PrismaClient, ProductStatus } from "@prisma/client";
 import { catalogCategories, catalogCheckoutUrl, catalogProducts, type CatalogProduct } from "../src/lib/content/catalog";
 import { financasCategories, financasProducts } from "../src/lib/content/catalog-financas";
 import { fitnessCategories, fitnessProducts } from "../src/lib/content/catalog-fitness";
+import { DEMO_OFFER_WINDOW, demoOfferSeeds } from "../src/lib/content/demo-offers";
 import { companyDefaults } from "../src/lib/company";
+import { computeDiscountPercent } from "../src/lib/offer";
 import {
   financasStoreDefaults,
   fitnessStoreDefaults,
@@ -65,6 +67,14 @@ async function upsertCatalog(
   for (const product of products) {
     const categoryId = bySlug[product.categorySlug];
     if (!categoryId) continue;
+    const demo = demoOfferSeeds[product.slug];
+    const sales = {
+      galleryImages: [product.coverImage],
+      mockupImages: [product.coverImage],
+      audiencePoints: demo?.audiencePoints ?? [],
+      notFor: demo?.notFor ?? [],
+      stickyCtaEnabled: true,
+    };
 
     await prisma.product.upsert({
       where: { storeId_slug: { storeId, slug: product.slug } },
@@ -84,6 +94,7 @@ async function upsertCatalog(
         featured: Boolean(product.featured),
         categoryId,
         status: ProductStatus.ACTIVE,
+        ...sales,
       },
       create: {
         name: product.name,
@@ -105,9 +116,56 @@ async function upsertCatalog(
         featured: Boolean(product.featured),
         storeId,
         categoryId,
+        ...sales,
       },
     });
   }
+}
+
+async function upsertDemoOffer(productSlug: string) {
+  const seed = demoOfferSeeds[productSlug];
+  if (!seed) return;
+  const product = await prisma.product.findFirst({ where: { slug: productSlug } });
+  if (!product) return;
+
+  const originalPriceCents = product.priceCents;
+  const promotionalPriceCents = product.promotionalPriceCents ?? Math.round(product.priceCents * 0.8);
+  const data = {
+    name: seed.name,
+    headline: seed.headline,
+    subheadline: seed.subheadline,
+    originalPriceCents,
+    promotionalPriceCents,
+    discountPercentage: computeDiscountPercent(originalPriceCents, promotionalPriceCents),
+    badge: seed.badge,
+    barText: seed.barText,
+    startsAt: DEMO_OFFER_WINDOW.startsAt,
+    endsAt: DEMO_OFFER_WINDOW.endsAt,
+    guaranteeEnabled: false,
+    guaranteeDays: null,
+    guaranteeText: null,
+    expiredBehavior: "hide_urgency",
+    stickyCtaEnabled: true,
+    demo: true,
+    active: true,
+  };
+
+  const existing = await prisma.offer.findFirst({
+    where: { productId: product.id, demo: true },
+  });
+
+  if (existing) {
+    await prisma.offer.update({ where: { id: existing.id }, data });
+    await prisma.offer.updateMany({
+      where: { productId: product.id, id: { not: existing.id } },
+      data: { active: false },
+    });
+    return;
+  }
+
+  await prisma.offer.create({
+    data: { productId: product.id, ...data },
+  });
 }
 
 async function main() {
@@ -142,6 +200,10 @@ async function main() {
   await upsertCatalog(semeia.id, catalogCategories, catalogProducts);
   await upsertCatalog(financas.id, financasCategories, financasProducts);
   await upsertCatalog(fitness.id, fitnessCategories, fitnessProducts);
+
+  await upsertDemoOffer("ainda-assim-espero");
+  await upsertDemoOffer("planner-financeiro");
+  await upsertDemoOffer("planner-de-treinos");
 }
 
 main()

@@ -90,7 +90,7 @@ model Category {
 }
 
 model Product {
-  id                    String        @id @default(cuid())
+  id                    String           @id @default(cuid())
   name                  String
   slug                  String
   shortDescription      String
@@ -98,30 +98,84 @@ model Product {
   priceCents            Int
   promotionalPriceCents Int?
   coverImage            String
+  galleryImages         String[]         @default([])
+  mockupImages          String[]         @default([])
+  videoUrl              String?
   tags                  String[]
   details               String?
   benefits              String[]
   contents              String[]
   audience              String
+  audiencePoints        String[]         @default([])
+  notFor                String[]         @default([])
   faq                   Json
   kiwifyCheckoutUrl     String
   /// Identificador opcional do produto na Kiwify. Preencher quando a API real estiver documentada.
   kiwifyProductId       String?
-  status                ProductStatus @default(ACTIVE)
-  featured              Boolean       @default(false)
+  stickyCtaEnabled      Boolean          @default(true)
+  status                ProductStatus    @default(ACTIVE)
+  featured              Boolean          @default(false)
   storeId               String
-  store                 Store         @relation(fields: [storeId], references: [id])
+  store                 Store            @relation(fields: [storeId], references: [id])
   categoryId            String
-  category              Category      @relation(fields: [categoryId], references: [id])
-  createdAt             DateTime      @default(now())
-  updatedAt             DateTime      @updatedAt
+  category              Category         @relation(fields: [categoryId], references: [id])
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
   orderItems            OrderItem[]
+  offers                Offer[]
+  checkoutIntents       CheckoutIntent[]
 
   @@unique([storeId, slug])
   @@index([storeId])
   @@index([categoryId])
   @@index([status])
   @@index([featured])
+}
+
+model Offer {
+  id                    String   @id @default(cuid())
+  productId             String
+  product               Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  name                  String
+  headline              String
+  subheadline           String
+  originalPriceCents    Int
+  promotionalPriceCents Int
+  discountPercentage    Int      @default(0)
+  badge                 String   @default("Oferta especial")
+  barText               String   @default("")
+  startsAt              DateTime
+  endsAt                DateTime
+  guaranteeEnabled      Boolean  @default(false)
+  guaranteeDays         Int?
+  guaranteeText         String?
+  expiredBehavior       String   @default("hide_urgency")
+  stickyCtaEnabled      Boolean  @default(true)
+  /// Marca ofertas de exemplo da plataforma. Não apresentar como promoção real.
+  demo                  Boolean  @default(false)
+  active                Boolean  @default(true)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([productId, active])
+  @@index([endsAt])
+}
+
+model CheckoutIntent {
+  id          String   @id @default(cuid())
+  storeId     String
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  offerId     String?
+  utmSource   String?
+  utmMedium   String?
+  utmCampaign String?
+  utmContent  String?
+  utmTerm     String?
+  createdAt   DateTime @default(now())
+
+  @@index([productId, createdAt])
+  @@index([storeId])
 }
 
 model Customer {

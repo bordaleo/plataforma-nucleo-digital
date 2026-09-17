@@ -5,6 +5,7 @@ import {
   fallbackCategoryBySlug,
   fallbackCompany,
   fallbackFeaturedProducts,
+  fallbackOfferForProduct,
   fallbackProductBySlug,
   fallbackRelatedProducts,
   fallbackSemeiaStore,
@@ -13,6 +14,7 @@ import {
   fallbackStores,
 } from "@/lib/content/fallback";
 import { prisma } from "@/lib/prisma";
+import { selectPrimaryOffer } from "@/lib/offer";
 import { withDb } from "@/lib/safe-db";
 import { DEFAULT_STORE_SLUG } from "@/lib/store";
 
@@ -155,7 +157,30 @@ export async function getAdminProducts(storeId: string) {
 }
 
 export async function getAdminProduct(id: string) {
-  return withDb(() => prisma.product.findUnique({ where: { id } }), null);
+  return withDb(
+    () =>
+      prisma.product.findUnique({
+        where: { id },
+        include: { offers: { orderBy: { updatedAt: "desc" } }, store: true, category: true },
+      }),
+    null,
+  );
+}
+
+export async function getOfferLanding(storeId: string, productSlug: string) {
+  const product = await getProductBySlug(storeId, productSlug);
+  if (!product) return null;
+  const offer = await withDb(
+    async () => {
+      const offers = await prisma.offer.findMany({
+        where: { productId: product.id, active: true },
+        orderBy: { endsAt: "desc" },
+      });
+      return selectPrimaryOffer(offers);
+    },
+    fallbackOfferForProduct(product),
+  );
+  return { product, offer };
 }
 
 export async function getAdminCategories(storeId: string) {

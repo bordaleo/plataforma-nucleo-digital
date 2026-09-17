@@ -34,8 +34,10 @@ function revalidateStorefront(storeSlug: string, productSlug?: string) {
   revalidatePath(storeHref(storeSlug, "/"));
   revalidatePath(storeHref(storeSlug, "/produtos"));
   revalidatePath("/admin/produtos");
+  revalidatePath("/admin/produtos", "layout");
   if (productSlug) {
     revalidatePath(storeHref(storeSlug, `/produtos/${productSlug}`));
+    revalidatePath(`/loja/${storeSlug}/oferta/${productSlug}`);
   }
 }
 

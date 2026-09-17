@@ -2,7 +2,9 @@ import { ProductStatus } from "@prisma/client";
 import { catalogCategories, catalogCheckoutUrl, catalogProducts } from "@/lib/content/catalog";
 import { financasCategories, financasProducts } from "@/lib/content/catalog-financas";
 import { fitnessCategories, fitnessProducts } from "@/lib/content/catalog-fitness";
+import { DEMO_OFFER_WINDOW, demoOfferSeeds } from "@/lib/content/demo-offers";
 import { companyDefaults } from "@/lib/company";
+import { computeDiscountPercent } from "@/lib/offer";
 import {
   financasStoreDefaults,
   fitnessStoreDefaults,
@@ -50,6 +52,7 @@ function buildFallbackCatalog(store: StoreProfile, categories: typeof catalogCat
     if (!category) {
       throw new Error(`Categoria ausente no fallback (${store.slug}): ${product.categorySlug}`);
     }
+    const demo = demoOfferSeeds[product.slug];
 
     return {
       id: `${store.slug}_prod_${product.slug}`,
@@ -60,12 +63,18 @@ function buildFallbackCatalog(store: StoreProfile, categories: typeof catalogCat
       priceCents: product.priceCents,
       promotionalPriceCents: product.promotionalPriceCents ?? null,
       coverImage: product.coverImage,
+      galleryImages: [product.coverImage],
+      mockupImages: [product.coverImage],
+      videoUrl: null,
       tags: product.tags,
       details: product.details,
       benefits: product.benefits,
       contents: product.contents,
       audience: product.audience,
+      audiencePoints: demo?.audiencePoints ?? [],
+      notFor: demo?.notFor ?? [],
       faq: product.faq,
+      stickyCtaEnabled: true,
       kiwifyCheckoutUrl: catalogCheckoutUrl(`${store.slug}-${product.slug}`),
       kiwifyProductId: null,
       status: ProductStatus.ACTIVE,
@@ -144,4 +153,34 @@ export function fallbackRelatedProducts(storeId: string, productId: string, cate
   return fallbackActiveProducts(storeId)
     .filter((product) => product.categoryId === categoryId && product.id !== productId)
     .slice(0, 3);
+}
+
+export function fallbackOfferForProduct(product: { id: string; slug: string; priceCents: number; promotionalPriceCents: number | null }) {
+  const seed = demoOfferSeeds[product.slug];
+  if (!seed) return null;
+  const originalPriceCents = product.priceCents;
+  const promotionalPriceCents = product.promotionalPriceCents ?? Math.round(product.priceCents * 0.8);
+  return {
+    id: `offer_${product.id}`,
+    productId: product.id,
+    name: seed.name,
+    headline: seed.headline,
+    subheadline: seed.subheadline,
+    originalPriceCents,
+    promotionalPriceCents,
+    discountPercentage: computeDiscountPercent(originalPriceCents, promotionalPriceCents),
+    badge: seed.badge,
+    barText: seed.barText,
+    startsAt: DEMO_OFFER_WINDOW.startsAt,
+    endsAt: DEMO_OFFER_WINDOW.endsAt,
+    guaranteeEnabled: false,
+    guaranteeDays: null,
+    guaranteeText: null,
+    expiredBehavior: "hide_urgency",
+    stickyCtaEnabled: true,
+    demo: true,
+    active: true,
+    createdAt: now,
+    updatedAt: now,
+  };
 }

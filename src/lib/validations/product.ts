@@ -37,7 +37,7 @@ export type ProductInput = {
 
 export type FieldErrors = Record<string, string>;
 
-function parseFaq(value: unknown): ProductFaqItem[] {
+export function parseFaq(value: unknown): ProductFaqItem[] {
   if (typeof value !== "string" || !value.trim()) return [];
 
   return value

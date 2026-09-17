@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ProductActions } from "@/components/admin/ProductActions";
 import { ProductForm } from "@/components/admin/ProductForm";
@@ -16,7 +17,12 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
           <h1 className="font-serif text-4xl text-ink">Editar produto</h1>
           <p className="mt-3 text-ink-soft">{product.name}</p>
         </div>
-        <ProductActions id={product.id} status={product.status} />
+        <div className="flex flex-col items-start gap-3 sm:items-end">
+          <ProductActions id={product.id} status={product.status} />
+          <Link href={`/admin/produtos/${product.id}/oferta`} className="text-sm text-bronze hover:text-bronze-deep">
+            Página de oferta
+          </Link>
+        </div>
       </div>
       <div className="mt-8">
         <ProductForm product={product} categories={categories} />

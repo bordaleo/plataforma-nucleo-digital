@@ -1,6 +1,7 @@
 import { OrderStatus, PaymentStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import type { NormalizedKiwifyEvent } from "@/lib/kiwify/types";
+import { sendMetaPurchase } from "@/lib/tracking/meta-capi";
 
 function toOrderStatus(eventType: NormalizedKiwifyEvent["eventType"]): OrderStatus {
   if (eventType === "order.paid") return OrderStatus.PAID;
@@ -123,6 +124,42 @@ export async function processKiwifyEvent(event: NormalizedKiwifyEvent) {
       rawPayload: event.raw as object,
     },
   });
+
+  if (event.eventType === "order.paid") {
+    const intent = products[0]
+      ? await prisma.checkoutIntent.findFirst({
+          where: { productId: products[0].id },
+          orderBy: { createdAt: "desc" },
+        })
+      : null;
+
+    const metadata = {
+      productRefs: event.productRefs,
+      occurredAt: event.occurredAt,
+      storeId,
+      purchaseConfirmed: true,
+      utm: intent
+        ? {
+            utm_source: intent.utmSource,
+            utm_medium: intent.utmMedium,
+            utm_campaign: intent.utmCampaign,
+            utm_content: intent.utmContent,
+            utm_term: intent.utmTerm,
+          }
+        : null,
+    };
+
+    await prisma.order.update({
+      where: { id: order.id },
+      data: { metadata },
+    });
+
+    await sendMetaPurchase({
+      eventId: payment.providerEventId ?? payment.id,
+      valueCents: amountCents,
+      contentIds: products.map((product) => product.id),
+    });
+  }
 
   return { status: "processed" as const, orderId: order.id, paymentId: payment.id };
 }
