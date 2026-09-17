@@ -1,26 +1,139 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --parchment: #f3eee4;
+  --parchment-deep: #e7ddcd;
+  --cream: #fbf8f2;
+  --ink: #1a2420;
+  --ink-soft: #3d4a43;
+  --muted: #6b756f;
+  --bronze: #9a7848;
+  --bronze-deep: #7a5c32;
+  --sage: #5e6f5c;
+  --forest: #1e3a32;
+  --line: #d6ccbc;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-parchment: var(--parchment);
+  --color-parchment-deep: var(--parchment-deep);
+  --color-cream: var(--cream);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-muted: var(--muted);
+  --color-bronze: var(--bronze);
+  --color-bronze-deep: var(--bronze-deep);
+  --color-sage: var(--sage);
+  --color-forest: var(--forest);
+  --color-line: var(--line);
+  --font-serif: var(--font-serif);
+  --font-sans: var(--font-sans);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--parchment);
+  color: var(--ink);
+  font-family: var(--font-sans), "Segoe UI", sans-serif;
+}
+
+::selection {
+  background: #d8c7a4;
+  color: var(--ink);
+}
+
+.font-serif {
+  font-family: var(--font-serif), "Times New Roman", serif;
+}
+
+.hairline {
+  background: linear-gradient(90deg, transparent, var(--bronze), transparent);
+  height: 1px;
+}
+
+.paper-grid {
+  background-image:
+    linear-gradient(to right, rgb(26 36 32 / 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(26 36 32 / 0.035) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+.store-theme-modern .font-serif {
+  font-family: var(--font-sans), "Segoe UI", sans-serif;
+  letter-spacing: -0.035em;
+}
+
+.store-theme-modern .rounded-full {
+  border-radius: 0.3rem;
+}
+
+.store-theme-energy .font-serif {
+  font-family: var(--font-sans), "Segoe UI", sans-serif;
+  letter-spacing: -0.04em;
+  font-weight: 700;
+}
+
+.ledger-grid {
+  background-image:
+    linear-gradient(to right, rgb(16 35 61 / 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(16 35 61 / 0.06) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.motion-grain {
+  background-image:
+    radial-gradient(circle at 20% 20%, rgb(216 90 43 / 0.16), transparent 36%),
+    radial-gradient(circle at 80% 10%, rgb(22 22 22 / 0.08), transparent 28%),
+    repeating-linear-gradient(-18deg, transparent, transparent 18px, rgb(22 22 22 / 0.04) 18px, rgb(22 22 22 / 0.04) 19px);
+}
+
+.company-grain {
+  background-image:
+    radial-gradient(ellipse at 12% 0%, rgb(255 255 255 / 0.35), transparent 42%),
+    radial-gradient(ellipse at 90% 20%, rgb(138 122 90 / 0.12), transparent 38%),
+    linear-gradient(180deg, #f3efe7 0%, #ebe4d8 48%, #e7dfd2 100%);
+}
+
+.company-dotgrid {
+  background-image: radial-gradient(rgb(20 18 14 / 0.12) 0.8px, transparent 0.8px);
+  background-size: 22px 22px;
+}
+
+@keyframes company-rise {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes company-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-7px);
+  }
+}
+
+.company-rise {
+  animation: company-rise 0.85s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.company-float {
+  animation: company-float 6.5s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .company-rise,
+  .company-float {
+    animation: none;
+  }
 }

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="1000" viewBox="0 0 800 1000">
+  <rect width="800" height="1000" fill="#f4f1ec"/>
+  <rect x="36" y="36" width="728" height="928" fill="none" stroke="#161616" stroke-opacity="0.22"/>
+  <path d="M80 520 280 180" stroke="#d85a2b" stroke-width="28"/><path d="M180 540 430 200" stroke="#161616" stroke-opacity="0.12" stroke-width="28"/><path d="M300 560 700 240" stroke="#d85a2b" stroke-opacity="0.45" stroke-width="28"/>
+  <text x="76" y="760" fill="#161616" fill-opacity="0.55" font-family="Georgia, serif" font-size="16" letter-spacing="4">DIARIO</text>
+  <text x="72" y="840" fill="#161616" font-family="Georgia, serif" font-size="52">Diario de Habitos</text>
+</svg>

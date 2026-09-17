@@ -1,36 +1,53 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Plataforma de lojas digitais
 
-## Getting Started
+Uma plataforma **Company → Stores**. A empresa (Núcleo, editável em `/admin/company`) administra várias marcas. A **Semeia** é a primeira loja (nicho cristão), não a empresa.
 
-First, run the development server:
+O catálogo e a vitrine rodam neste projeto; o pagamento é feito na Kiwify.
+
+## Stack
+
+- Next.js (App Router) + TypeScript
+- Tailwind CSS
+- PostgreSQL + Prisma
+
+## Como rodar
+
+1. Copie `.env.example` para `.env` e ajuste as variáveis.
+2. Crie um banco PostgreSQL. Se usar Docker:
+
+```bash
+docker compose up -d
+```
+
+No Windows, com PostgreSQL local, ajuste `DATABASE_URL` para o usuário e a senha da sua instalação e crie o banco `semeia`.
+
+3. Aplique a migration, gere o client e popule os exemplos:
+
+```bash
+npx prisma migrate dev
+npm run db:seed
+```
+
+4. Inicie a loja:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- Empresa: http://localhost:3000
+- Semeia: http://localhost:3000/loja/semeia
+- Finanças: http://localhost:3000/loja/financas
+- Fitness: http://localhost:3000/loja/fitness
+- Catálogo da Semeia (compatível): http://localhost:3000/produtos
+- Admin / empresa: http://localhost:3000/admin/company
+- Admin / lojas: http://localhost:3000/admin/stores
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Credenciais iniciais vêm de `ADMIN_EMAIL` e `ADMIN_PASSWORD` no `.env`.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Kiwify
 
-## Learn More
+Cada produto tem o próprio `kiwifyCheckoutUrl`. O botão **Comprar agora** envia o cliente para esse checkout.
 
-To learn more about Next.js, take a look at the following resources:
+O endpoint `POST /api/webhooks/kiwify` já persiste cliente, pedido e pagamento. A assinatura e o mapeamento de campos são placeholders: configure `KIWIFY_WEBHOOK_SECRET` e ajuste `src/lib/kiwify/` quando a documentação oficial estiver disponível. Nenhum dado de cartão é armazenado.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Enquanto o PostgreSQL não estiver acessível, a vitrine usa o catálogo de exemplo em `src/lib/content/catalog.ts`. Criar, editar e registrar vendas exige o banco.

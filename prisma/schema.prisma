@@ -1,0 +1,187 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ProductStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  REFUNDED
+  CANCELLED
+  FAILED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  REFUNDED
+  FAILED
+}
+
+model Company {
+  id             String   @id @default(cuid())
+  name           String
+  slug           String   @unique
+  description    String
+  tagline        String   @default("")
+  logo           String?
+  favicon        String?
+  primaryColor   String
+  secondaryColor String
+  email          String?
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  stores         Store[]
+}
+
+model Store {
+  id             String     @id @default(cuid())
+  name           String
+  slug           String     @unique
+  niche          String
+  description    String
+  tagline        String     @default("")
+  logo           String?
+  favicon        String?
+  primaryColor     String
+  secondaryColor   String
+  backgroundColor  String   @default("#f3eee4")
+  themeStyle       String   @default("editorial")
+  domain           String?
+  email          String?
+  instagram      String?
+  active         Boolean    @default(true)
+  companyId      String
+  company        Company    @relation(fields: [companyId], references: [id])
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  categories     Category[]
+  products       Product[]
+  orders         Order[]
+
+  @@index([active])
+  @@index([companyId])
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String
+  description String
+  image       String?
+  storeId     String
+  store       Store     @relation(fields: [storeId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  products    Product[]
+
+  @@unique([storeId, slug])
+  @@index([storeId])
+}
+
+model Product {
+  id                    String        @id @default(cuid())
+  name                  String
+  slug                  String
+  shortDescription      String
+  description           String
+  priceCents            Int
+  promotionalPriceCents Int?
+  coverImage            String
+  tags                  String[]
+  details               String?
+  benefits              String[]
+  contents              String[]
+  audience              String
+  faq                   Json
+  kiwifyCheckoutUrl     String
+  /// Identificador opcional do produto na Kiwify. Preencher quando a API real estiver documentada.
+  kiwifyProductId       String?
+  status                ProductStatus @default(ACTIVE)
+  featured              Boolean       @default(false)
+  storeId               String
+  store                 Store         @relation(fields: [storeId], references: [id])
+  categoryId            String
+  category              Category      @relation(fields: [categoryId], references: [id])
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+  orderItems            OrderItem[]
+
+  @@unique([storeId, slug])
+  @@index([storeId])
+  @@index([categoryId])
+  @@index([status])
+  @@index([featured])
+}
+
+model Customer {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  phone     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  orders    Order[]
+}
+
+model Order {
+  id            String      @id @default(cuid())
+  storeId       String
+  store         Store       @relation(fields: [storeId], references: [id])
+  customerId    String
+  customer      Customer    @relation(fields: [customerId], references: [id])
+  status        OrderStatus @default(PENDING)
+  totalCents    Int
+  currency      String      @default("BRL")
+  /// Preenchido quando o webhook da Kiwify for mapeado. Campo interno, não da API.
+  providerRef   String?     @unique
+  metadata      Json?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  items         OrderItem[]
+  payment       Payment?
+
+  @@index([storeId])
+  @@index([customerId])
+  @@index([status])
+}
+
+model OrderItem {
+  id         String  @id @default(cuid())
+  orderId    String
+  order      Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId  String
+  product    Product @relation(fields: [productId], references: [id])
+  name       String
+  quantity   Int     @default(1)
+  priceCents Int
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+model Payment {
+  id                String        @id @default(cuid())
+  orderId           String        @unique
+  order             Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  provider          String        @default("kiwify")
+  status            PaymentStatus @default(PENDING)
+  amountCents       Int
+  /// Identificador do evento no provedor. Usado para idempotência.
+  providerEventId   String?       @unique
+  providerPaymentId String?
+  /// Payload bruto do webhook para auditoria. Nunca armazenar dados de cartão.
+  rawPayload        Json?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+}

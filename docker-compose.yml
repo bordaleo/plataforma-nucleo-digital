@@ -1,0 +1,20 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: semeia-postgres
+    environment:
+      POSTGRES_USER: semeia
+      POSTGRES_PASSWORD: semeia
+      POSTGRES_DB: semeia
+    ports:
+      - "5432:5432"
+    volumes:
+      - semeia_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U semeia -d semeia"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  semeia_pg:

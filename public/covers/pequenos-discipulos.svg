@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="1000" viewBox="0 0 800 1000">
+  <rect width="800" height="1000" fill="#e7ddd0"/>
+  <rect x="36" y="36" width="728" height="928" fill="none" stroke="#9a7848" stroke-opacity="0.28" stroke-width="1"/>
+  <path d="M400 210c70 28 118 86 118 160 0 92-54 140-118 190-64-50-118-98-118-190 0-74 48-132 118-160Z" fill="#9a7848" fill-opacity="0.12"/>
+  <circle cx="400" cy="188" r="8" fill="#9a7848" fill-opacity="0.45"/>
+  <text x="80" y="720" fill="#9a7848" fill-opacity="0.55" font-family="Georgia, serif" font-size="16" letter-spacing="4">INFANTIL</text>
+  <text x="76" y="790" fill="#9a7848" font-family="Georgia, serif" font-size="64">Pequenos</text>
+  <text x="76" y="862" fill="#9a7848" font-family="Georgia, serif" font-size="64">discípulos</text>
+</svg>
